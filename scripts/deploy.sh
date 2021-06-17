@@ -1,4 +1,5 @@
 #!/bin/bash
+kubectl get pods -v=6
 docker run -v ${TRAVIS_BUILD_DIR}:/kube alpine/k8s:1.18.16 kubectl --kubeconfig kubeconfig set image deployment/travispy travispy=qaxim/travis:py01
 
 
