@@ -1,5 +1,5 @@
 #!/bin/bash
-docker run -v ${TRAVIS_BUILD_DIR}:/kube alpine/k8s kubectl --kubeconfig kubeconfig set image deployment/travispy travispy=qaxim/travis:py01
+docker run -v ${TRAVIS_BUILD_DIR}:/kube alpine/k8s:1.18.16 kubectl --kubeconfig kubeconfig set image deployment/travispy travispy=qaxim/travis:py01
 
 
 
