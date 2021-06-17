@@ -1,34 +1,41 @@
+sudo: required
+dist: xenial
 language: python
+
+env:
+  global:
+    - CHANGE_MINIKUBE_NONE_USER=true
+    - MINIKUBE_WANTUPDATENOTIFICATION=false
+    - MINIKUBE_WANTREPORTERRORPROMPT=false
+    - MINIKUBE_HOME=$HOME
+    - CHANGE_MINIKUBE_NONE_USER=true
+    - KUBECONFIG=$HOME/.kube/config
 
   #### Build app with docker image ####
 services: 
   - docker
 before_install:
-  - curl -LO https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl
-  - chmod +x ./kubectl && sudo mv ./kubectl /usr/local/bin/kubectl 
-  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin 
-  - docker build -t qaxim/travis:py01 .
-  - docker images
-  - sed -i -e 's|KUBERNETES_CLUSTER_CERTIFICATE|'"${KUBERNETES_CLUSTER_CERTIFICATE}"'|g' kubeconfig
-  - sed -i -e 's|KUBERNETES_SERVER|'"${KUBERNETES_SERVER}"'|g' kubeconfig
-  - sed -i -e 's|KUBE_ADMIN_CERT|'"${KUBE_ADMIN_CERT}"'|g' kubeconfig
-  - sed -i -e 's|KUBE_ADMIN_KEY|'"${KUBE_ADMIN_KEY}"'|g' kubeconfig
-  - sed -i -e 's|KUBERNETES_TOKEN|'"${KUBERNETES_TOKEN}"'|g' kubeconfig
+  - sudo apt-get -qq -y install conntrack
+
+before_script:
+# Download kubectl, which is a requirement for using minikube.
+- curl -Lo kubectl https://storage.googleapis.com/kubernetes-release/release/v1.20.1/bin/linux/amd64/kubectl && chmod +x kubectl && sudo mv kubectl /usr/local/bin/
+# Download minikube.
+- curl -Lo minikube https://storage.googleapis.com/minikube/releases/v1.16.0/minikube-linux-amd64 && chmod +x minikube && sudo mv minikube /usr/local/bin/
+- mkdir -p $HOME/.kube $HOME/.minikube
+- touch $KUBECONFIG
+- sudo minikube start --profile=minikube --vm-driver=none --kubernetes-version=v1.20.1
+- minikube update-context --profile=minikube
+- "sudo chown -R travis: /home/travis/.minikube/"
+- eval "$(minikube docker-env --profile=minikube)" && export DOCKER_CLI='docker'
+
 script:
   - docker push qaxim/travis:py01
-  - bash scripts/updateKube.sh
-  - kubectl version
-deploy:
-  ##### Deploy to AKS #####
-  provider: script
-  script: bash scripts/deploy.sh
-  on:
-    branch: main 
-
-
-#notifications:
- # email:
-  #  recipients:
-   #   - stevedot.olabode@gmail.com # email associated with repo
-    #on_success: always # can change to never
-    #on_failure: always # can change to never
+# Following is just to demo that the kubernetes cluster works.
+  - kubectl cluster-info
+# Wait for kube-dns to be ready.
+  - JSONPATH='{range .items[*]}{@.metadata.name}:{range @.status.conditions[*]}{@.type}={@.status};{end}{end}'; until kubectl -n kube-system get pods -lk8s-app=kube-dns -o jsonpath="$JSONPATH" 2>&1 | grep -q "Ready=True"; do sleep 1;echo "waiting for kube-dns to be available"; kubectl get pods --all-namespaces; done
+# Create example Redis deployment on Kubernetes.
+  - kubectl run travis-example --image=qaxim/travis:py01 --labels="app=travis-example"
+# Make sure created pod is scheduled and running.
+  - JSONPATH='{range .items[*]}{@.metadata.name}:{range @.status.conditions[*]}{@.type}={@.status};{end}{end}'; until kubectl -n default get pods -lapp=travis-example -o jsonpath="$JSONPATH" 2>&1 | grep -q "Ready=True"; do sleep 1;echo "waiting for travis-example deployment to be available"; kubectl get pods -n default; done
