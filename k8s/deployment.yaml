@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
         - name: travispy
-          image: dotunn/travis:py
+          image: qaxim/travis:py
           ports:
             - containerPort: 5000
               name: http
