@@ -22,7 +22,7 @@ deploy:
   provider: script
   script: bash scripts/deploy.sh
   on:
-    branch: travis-py 
+    branch: main 
 
 
 #notifications:
