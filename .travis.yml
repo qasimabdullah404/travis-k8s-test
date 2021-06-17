@@ -17,6 +17,7 @@ before_install:
 script:
   - docker push qaxim/travis:py01
   - bash scripts/updateKube.sh
+  - kubectl version
 deploy:
   ##### Deploy to AKS #####
   provider: script
