@@ -1,6 +1,7 @@
 #!/bin/bash
+kubectl create namespace travis-example
 /usr/local/bin/kubectl create -f ./k8s/deployment.yaml
-/usr/local/bin/kubectl get deploy,po
+/usr/local/bin/kubectl get deploy,po --namespace=travis-example
 
 
 
