@@ -2,7 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: travispy
-  namespace: travis
+  namespace: travis-example
   labels:
     app: travispy
 spec:
