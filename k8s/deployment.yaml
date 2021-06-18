@@ -33,7 +33,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: travispy
-  namespace: travis
+  namespace: travis-example
   labels:
     app: travispy
 spec:
