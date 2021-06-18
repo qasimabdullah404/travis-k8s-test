@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
         - name: travispy
-          image: qaxim/travis:py
+          image: qaxim/travis:py01
           resources:
             limits:
               memory: 512Mi
