@@ -1,5 +1,5 @@
 #!/bin/bash
-/usr/local/bin/kubectl create -f ../k8s/deployment.yaml
+/usr/local/bin/kubectl create -f ./k8s/deployment.yaml
 /usr/local/bin/kubectl get deploy,po
 
 
