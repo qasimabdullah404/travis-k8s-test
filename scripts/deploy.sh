@@ -1,4 +1,6 @@
 #!/bin/bash
+docker context export k8s-test --kubeconfig
+cat k8s-test.kubeconfig
 docker run -v ${TRAVIS_BUILD_DIR}:/kube /usr/local/bin/kubectl --kubeconfig kubeconfig set image deployment/travispy travispy=qaxim/travis:py01
 
 
