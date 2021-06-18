@@ -45,5 +45,6 @@ deploy:
   ##### Deploy to AKS #####
   provider: script
   script: bash scripts/deploy.sh
+  edge: true
   on:
     branch: main 
